@@ -1,23 +1,39 @@
+Jenkinsfile (Declarative Pipeline)
 pipeline {
     agent any
 
     stages {
-        stage('Validate') {
-            steps {
-                echo 'Building..'
-		sh '/usr/share/maven/bin/mvn validate'
-            }
-        }
         stage('Build') {
             steps {
-                echo 'Testing..'
-		sh '/usr/share/maven/bin/mvn package'
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
             }
         }
+    }
+}
+
+stages {
         stage('Test') {
             steps {
-                echo 'Deploying....'
-		sh '/usr/share/maven/bin/mvn test'
+                /* `make check` returns non-zero on test failures,
+                * using `true` to allow the Pipeline to continue nonetheless
+                */
+                sh 'make check || true' 
+                junit '**/target/*.xml' 
+            }
+        }
+    }
+}
+
+ stages {
+        stage('Deploy') {
+            when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+            steps {
+                sh 'make publish'
             }
         }
     }
