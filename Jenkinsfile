@@ -1,40 +1,22 @@
-Jenkinsfile (Declarative Pipeline)
 pipeline {
     agent any
-
     stages {
         stage('Build') {
             steps {
-                sh 'make' 
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+                sh 'mvn clean package'
             }
         }
-    }
-}
-
-stages {
         stage('Test') {
             steps {
-                /* `make check` returns non-zero on test failures,
-                * using `true` to allow the Pipeline to continue nonetheless
-                */
-                sh 'make check || true' 
-                junit '**/target/*.xml' 
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'scp target/*.war http://3.83.100.92/@tomcat:/path/to/webapps'
+                sh 'ssh user@tomcat "./bin/shutdown.sh && ./bin/startup.sh"'
             }
         }
     }
 }
 
- stages {
-        stage('Deploy') {
-            when {
-              expression {
-                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
-              }
-            }
-            steps {
-                sh 'make publish'
-            }
-        }
-    }
-}
