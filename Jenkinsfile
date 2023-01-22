@@ -3,20 +3,32 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                // Use appropriate build tool (e.g. Maven or Gradle) to build the project
+                sh 'mvn clean install'
             }
         }
         stage('Test') {
             steps {
+                // Use appropriate test tool (e.g. JUnit or TestNG) to run tests
                 sh 'mvn test'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'scp target/*.war 3.83.100.92:8080@tomcat:/path/to/webapps'
-                sh 'ssh 3.83.100.92:8080@tomcat "./bin/shutdown.sh && ./bin/startup.sh"'
+                // Use the Jenkins Tomcat plugin to deploy the built war file to Tomcat
+                sh '''
+                export CATALINA_HOME=/path/to/tomcat
+                $CATALINA_HOME/bin/catalina.sh stop
+                rm -rf $CATALINA_HOME/webapps/calculator
+                rm -rf $CATALINA_HOME/webapps/calculator.war
+                cp target/calculator.war $CATALINA_HOME/webapps/
+                $CATALINA_HOME/bin/catalina.sh start
+                '''
             }
         }
     }
 }
+
+
+
 
