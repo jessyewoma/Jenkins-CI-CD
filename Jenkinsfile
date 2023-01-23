@@ -1,34 +1,26 @@
 pipeline {
     agent any
+
     stages {
         stage('Build') {
             steps {
-                // Use appropriate build tool (e.g. Maven or Gradle) to build the project
-                sh 'mvn clean install'
+                echo 'Building..'
+		sh '/usr/share/maven/bin/mvn package'
             }
         }
-        stage('Test') {
+        stage('test') {
             steps {
-                // Use appropriate test tool (e.g. JUnit or TestNG) to run tests
-                sh 'mvn test'
+                echo 'Building..'
+		sh '/usr/share/maven/bin/mvn test'
             }
         }
-        stage('Deploy') {
+        stage('delopy') {
             steps {
-                // Use the Jenkins Tomcat plugin to deploy the built war file to Tomcat
-                sh '''
-                export CATALINA_HOME=/path/to/tomcat
-                $CATALINA_HOME/bin/catalina.sh stop
-                rm -rf $CATALINA_HOME/webapps/calculator
-                rm -rf $CATALINA_HOME/webapps/calculator.war
-                cp target/calculator.war $CATALINA_HOME/webapps/
-                $CATALINA_HOME/bin/catalina.sh start
-                '''
+                echo 'Deploying....'
+		sshagent(['Deploy_user']) {
+		sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/jenkins-pipe/target/webapp-0.2.war centos@3.83.100.92:/home/centos/apache-tomcat-7.0.94/webapps"
+		 }
             }
         }
     }
 }
-
-
-
-
