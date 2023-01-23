@@ -17,7 +17,7 @@ pipeline {
         stage('delopy') {
             steps {
                 echo 'Deploying....'
-		sshagent(['Deploy_user']) {
+		sshagent(['deploy_user']) {
 		sh "scp /var/lib/jenkins/workspace/jenkins-CI-CD/target/webapp-0.2.war centos@3.83.100.92:/home/centos/apache-tomcat-7.0.94/webapps"
 		 }
             }
